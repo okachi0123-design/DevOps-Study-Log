@@ -20,39 +20,50 @@
 - ↑の下のYAMLファイルに従ってGitHubがワークフローを動かしてくれるようになる
 - `workflows`でVSCodeを開き、好きな名前でファイルを作る`workflows/web_pytest.yaml`
 ‐ YAMLファイルに書き込む 
-```
 ・ワークフロー名指定
-name: Run Web Pytest #ワークフローの名前
+
+```yaml
+name: Run-Web-Pytest #ワークフローの名前
+```
 
 ・トリガー指定
+
+```yaml
 on: #トリガーを指定するよ
   push: #指定されたトリガー（push）
     branches: ["main"] #（フィルター）main branchのイベントに限定
 
   pull_request: #（pull request）
     branches: ["main"] #（フィルター）main branchのイベントに限定
+```
 
 ・ジョブ指定
-  jobs: #jobと指定
-    Test-Webquiz: #ジョブ名
-      runs-on: ubuntu-latest #ジョブを動かす環境（ランナー）GitHub hosted runner←今回使用/Self hosted runner 
+
+```yaml
+jobs: #jobと指定
+  test-backend: #ジョブ識別
+    runs-on: ubuntu-latest #ジョブを動かす環境（ランナー）GitHub hosted runner←今回使用/Self hosted runner
+```
 
 ・ステップ指定（jobsの１つ下のインシデント）
 
 ・ステップ１　リポジトリのチェック　理由：ランナーの環境にはテスト対象のソースコードがまだ入っていない状態だから
+
+```yaml
     steps:
-      - name: Checkout repository #リポジトリのチェック
-        uses: actions/checkout@v7 #チェックアウト用アクション　＊バージョン（v7）はGitHub公式リポジトリのactions/checkoutから確認できる。
+      - name: Checkout-repository #リポジトリのチェック
+        uses: actions/checkout@v7 #チェックアウト用アクション
+
       - name: Setup-Python #Python環境のセットアップ（バージョン指定したい時）
-        uses: actions/setup-python@v7 ＊バージョンはactions/setup-pythonから確認
+        uses: actions/setup-python@v7 #actions/setup-python
         with:
-          pytho-version: #バージョン指定
+          python-version: 3.12 #バージョン指定
 
       - name: Install-Dependencies #requirements.txtのインストール
-        run: pip install -r requirements.txt #実行コード
+        run: pip install -r web/vps-web/backend/requirements.txt #実行コード
 
-      - name: Run-Pytest #pytest実行
-        run: pytest
+      - name: Run-Pytest #Pytest実行
+        run: pytest web/vps-web/backend/tests
 ```
 
 ## 参考資料
