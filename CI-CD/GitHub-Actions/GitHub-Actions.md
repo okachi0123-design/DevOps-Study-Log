@@ -14,3 +14,47 @@
 - Job：実際にテストやデプロイを行うための複数のステップを設定し管理する実行単位
 - Step:Jobを構成する具体的なコマンドやActionなどの部品
 
+## 制作ログ
+
+- リポジトリのルート直下に、GitHub用の設定ファイルのディレクトリである`.github`、その下にワークフロー用ディレクトリ`workflows`を作成する`~/English_vocab_quiz/.github/workflows`
+- ↑の下のYAMLファイルに従ってGitHubがワークフローを動かしてくれるようになる
+- `workflows`でVSCodeを開き、好きな名前でファイルを作る`workflows/web_pytest.yaml`
+‐ YAMLファイルに書き込む 
+```
+・ワークフロー名指定
+name: Run Web Pytest #ワークフローの名前
+
+・トリガー指定
+on: #トリガーを指定するよ
+  push: #指定されたトリガー（push）
+    branches: ["main"] #（フィルター）main branchのイベントに限定
+
+  pull_request: #（pull request）
+    branches: ["main"] #（フィルター）main branchのイベントに限定
+
+・ジョブ指定
+  jobs: #jobと指定
+    Test-Webquiz: #ジョブ名
+      runs-on: ubuntu-latest #ジョブを動かす環境（ランナー）GitHub hosted runner←今回使用/Self hosted runner 
+
+・ステップ指定（jobsの１つ下のインシデント）
+
+・ステップ１　リポジトリのチェック　理由：ランナーの環境にはテスト対象のソースコードがまだ入っていない状態だから
+    steps:
+      - name: Checkout repository #リポジトリのチェック
+        uses: actions/checkout@v7 #チェックアウト用アクション　＊バージョン（v7）はGitHub公式リポジトリのactions/checkoutから確認できる。
+      - name: Setup-Python #Python環境のセットアップ（バージョン指定したい時）
+        uses: actions/setup-python@v7 ＊バージョンはactions/setup-pythonから確認
+        with:
+          pytho-version: #バージョン指定
+
+      - name: Install-Dependencies #requirements.txtのインストール
+        run: pip install -r requirements.txt #実行コード
+
+      - name: Run-Pytest #pytest実行
+        run: pytest
+```
+
+## 参考資料
+- [GitHub Actionsを使ってCI/CDを実装！（YouTube）](https://www.youtube.com/watch?v=RxcUrg3OO3o&t=222s)
+- [GitHub公式ドキュメント：ワークフローの構文](https://docs.github.com/ja/actions/reference/workflows-and-actions/workflow-syntax)
