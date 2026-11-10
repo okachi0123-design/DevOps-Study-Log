@@ -120,7 +120,9 @@ services:
       AUTH_CLIENT_SECRET: "test_client_secret"
       SECRET_SESSION_KEY: "test_session_key"
 ```
-- push成功
+- push CI成功
 ## 参考資料
 - [GitHub Actionsを使ってCI/CDを実装！（YouTube）](https://www.youtube.com/watch?v=RxcUrg3OO3o&t=222s)
 - [GitHub公式ドキュメント：ワークフローの構文](https://docs.github.com/ja/actions/reference/workflows-and-actions/workflow-syntax)
+- [GitHub Actions で FastAPI + PostgreSQL テストを自動実行する（Qiita）](https://qiita.com/takuabon/items/e51de1ff4e5d9a29bb6b)
+- [PostgreSQLサービスコンテナの作成（GitHub Docs）](https://docs.github.com/ja/actions/tutorials/use-containerized-services/create-postgresql-service-containers)
