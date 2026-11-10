@@ -65,7 +65,13 @@ jobs: #jobと指定
       - name: Run-Pytest #Pytest実行
         run: pytest web/vps-web/backend/tests
 ```
-
+- `name: Run-Pytest` でテストを実行するディレクトリを指定しなかったことで、GitHub Actionsがどこでテストを実行するのか分からず、エラーが起きた
+```
+      - name: Run-Pytest #Pytest実行
+        run: pytest web/vps-web/backend/tests
+        working-directory: web/vps-web/backend
+```
+- `working-directory: web/vps-web/backend`を追加して、認識させるように指定
 ## 参考資料
 - [GitHub Actionsを使ってCI/CDを実装！（YouTube）](https://www.youtube.com/watch?v=RxcUrg3OO3o&t=222s)
 - [GitHub公式ドキュメント：ワークフローの構文](https://docs.github.com/ja/actions/reference/workflows-and-actions/workflow-syntax)
