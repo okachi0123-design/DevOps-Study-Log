@@ -14,6 +14,17 @@
 - Job：実際にテストやデプロイを行うための複数のステップを設定し管理する実行単位
 - Step:Jobを構成する具体的なコマンドやActionなどの部品
 
+## CI/CD連携
+- テスト成功を条件にデプロイさせるためには処理の連鎖を構築する必要がある
+- 処理の連鎖には`依存ジョブ`と`workflow_runトリガー`の二つの機能が使われる
+- ジョブを連鎖させるには依存ジョブを使う　依存ジョブに`needs`フィールドを設定すると他のジョブの完了を待つようになる（デフォルトではジョブは並列実行）
+- ワークフロー間を連鎖させるにはworkflow_runトリガーを使う　前のワークフローの完了を契機に次のワークフローが動くように順番を設定できる
+- workflow_runトリガーだけでは、前ワークフローの結果を判断できないので成功・失敗の結果を考慮させたい場合は、コンテキスト`github.event.workflow_run`を確認させる必要がある　（例：if: でコンテキストの結果が成功時のみ実行みたいにする）
+- コンテキストには前ワークフローの情報が含まれている
+- workflow_runで起動したワークフローは、デフォルトではリポジトリのデフォルトブランチの最新コミットを取得するため、CI実行後に新しいコミットが追加されると、CIでテストしたコードとではない、最新のコミットのコードの方をデプロイしてしまう可能性がある
+- actions/checkoutのrefを指定することで、取得するブランチ・タグ・コミットを指定できる
+- `github.event.workflow_run.head_sha`に前ワークフローが実行されたコミットの識別子が含まれるのでそれをwithのrefに指定することで判別できる
+
 ## CI制作ログ
 
 - リポジトリのルート直下に、GitHub用の設定ファイルのディレクトリである`.github`、その下にワークフロー用ディレクトリ`workflows`を作成する`~/English_vocab_quiz/.github/workflows`
@@ -216,6 +227,38 @@ sudo visudo -f /etc/sudoers.d/webquiz-deployでCD用のsudo設定ファイルを
           mkdir -p ~/.ssh
           echo "${{ secrets.VPS_HOST_KEY }}" >> ~/.ssh/known_hosts
 ```
+## CI/CD連携ログ
+- `workflow_runトリガー`設定
+- 起動トリガーをpushからワークフローランに変更
+```
+on:
+  workflow_run:　トリガーをワークフローランに絞る
+    workflows: ["Run-Web-Pytest"]　前ワークフロー名
+    branches: ["main"]
+    types: ["completed"]　完了時に実行
+```
+- これだけでは成功、失敗を判断できないのでコンテキスト確認の追加
+- `github.event.workflow_run.conclusion`にワークフロー実行結果が`成功時：success``失敗時：failure`として入っている　この結果をif条件にあてることで成功失敗を判断できる
+```
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} 
+    steps:
+      - name: Checkout-repository
+```
+- テストしたコードとデプロイするコードを一致させるためにrefを追加
+- チェックアウト時に指定することで判別できる
+```
+    steps:
+      - name: Checkout-repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+```
+
+
 ## 参考資料
 - [GitHub Actionsを使ってCI/CDを実装！（YouTube）](https://www.youtube.com/watch?v=RxcUrg3OO3o&t=222s)
 - [GitHub公式ドキュメント：ワークフローの構文](https://docs.github.com/ja/actions/reference/workflows-and-actions/workflow-syntax)
@@ -223,3 +266,5 @@ sudo visudo -f /etc/sudoers.d/webquiz-deployでCD用のsudo設定ファイルを
 - [PostgreSQLサービスコンテナの作成（GitHub Docs）](https://docs.github.com/ja/actions/tutorials/use-containerized-services/create-postgresql-service-containers)
 - [GitHub ActionsからUbuntuサーバーへデプロイする方法（LinuxLab）](https://linuxlab.jp/2026/07/10/ubuntu-github-actions-deploy/)
 - [OpenSSH公式マニュアル — SSH_KNOWN_HOSTS FILE FORMAT](https://man.openbsd.org/sshd.8#SSH_KNOWN_HOSTS_FILE_FORMAT)
+- [masato_makino「GitHub ActionsでWorkFlowやJobを連鎖させる方法」Qiita](https://qiita.com/masato_makino/items/f8cf20f3d0025d15bac8)
+
